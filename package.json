@@ -1,0 +1,13 @@
+{
+  "name": "smart-daily-planner",
+  "version": "1.0.0",
+  "description": "Smart Daily Planner Web App with Real-Time Live Reload & Groq AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["daily-planner", "task-management", "ai-assistant", "groq"],
+  "author": "",
+  "license": "ISC"
+}

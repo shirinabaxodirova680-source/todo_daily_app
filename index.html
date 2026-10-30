@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Daily Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+    <div>
+      <div class="logo-text">Smart Daily</div>
+      <div class="logo-sub">Planner</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-title" data-i18n="main">Asosiy</div>
+
+    <div class="nav-item active" data-page="dashboard">
+      <div class="nav-icon"><i class="fas fa-th-large"></i></div>
+      <span data-i18n="navHome">Bosh sahifa</span>
+    </div>
+    <div class="nav-item" data-page="tasks">
+      <div class="nav-icon"><i class="fas fa-check-circle"></i></div>
+      <span data-i18n="navTasks">Vazifalar</span>
+      <span class="badge" id="pending-badge">0</span>
+    </div>
+    <div class="nav-item" data-page="calendar">
+      <div class="nav-icon"><i class="fas fa-calendar-alt"></i></div>
+      <span data-i18n="navCalendar">Kalendar</span>
+    </div>
+
+    <div class="nav-section-title" style="margin-top:12px;" data-i18n="tools">Vositalar</div>
+
+    <div class="nav-item" data-page="ai">
+      <div class="nav-icon"><i class="fas fa-robot"></i></div>
+      <span data-i18n="navAi">AI Yordamchi</span>
+    </div>
+    <div class="nav-item" data-page="settings">
+      <div class="nav-icon"><i class="fas fa-cog"></i></div>
+      <span data-i18n="navProfile">Sozlamalar</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="theme-lang-row">
+      <button class="theme-btn" id="theme-toggle">
+        <i class="fas fa-moon" id="theme-icon"></i>
+        <span id="theme-label">Kunduzgi</span>
+      </button>
+      <div class="lang-group">
+        <button class="lang-btn lang-pill active" data-lang="uz">O'z</button>
+        <button class="lang-btn lang-pill" data-lang="ru">Рус</button>
+        <button class="lang-btn lang-pill" data-lang="en">En</button>
+      </div>
+    </div>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- ══ MAIN WRAP ══ -->
+<div class="main-wrap">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="mobile-toggle" id="mobile-toggle"><i class="fas fa-bars"></i></button>
+    <h1 class="topbar-title" id="page-title">Dashboard</h1>
+    <div class="topbar-right">
+      <button class="topbar-btn" title="Yangilash" onclick="refreshWeather()">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+      <button class="add-task-btn" id="open-add-modal">
+        <i class="fas fa-plus"></i>
+        <span data-i18n="add">Qo'shish</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGES CONTENT -->
+  <div class="content">
+
+    <!-- ══ PAGE: DASHBOARD ══ -->
+    <div class="page active" id="page-dashboard">
+      <div id="greeting" class="greeting-text"></div>
+      <h2 class="welcome-title" data-i18n="welcomeBack">Xush kelibsiz!</h2>
+
+      <!-- Stat Cards -->
+      <div class="grid-4" style="margin-bottom:16px;">
+        <div class="stat-card stat-blue">
+          <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+          <div class="stat-value" id="stat-today">0</div>
+          <div class="stat-label" data-i18n="todaysTasks">Bugungi vazifalar</div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-value" id="stat-done">0</div>
+          <div class="stat-label" data-i18n="completed">Bajarilgan</div>
+        </div>
+        <div class="stat-card stat-red">
+          <div class="stat-icon"><i class="fas fa-clock"></i></div>
+          <div class="stat-value" id="stat-pending">0</div>
+          <div class="stat-label" data-i18n="pending">Kutilmoqda</div>
+        </div>
+        <div class="stat-card stat-amber">
+          <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label" data-i18n="allTasks">Barcha vazifalar</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:20px;">
+        <!-- Progress Card -->
+        <div class="card">
+          <div class="section-head">
+            <h2 data-i18n="dailyProgress">Kunlik progress</h2>
+            <span class="progress-pct" id="progress-pct">0%</span>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weather Card -->
+        <div class="weather-card" id="weather-card">
+          <div class="weather-emoji" id="wx-icon">☀️</div>
+          <div>
+            <div class="weather-city" id="wx-city">Toshkent</div>
+            <div class="weather-temp" id="wx-temp">25°C · Quyoshli</div>
+            <div class="weather-meta">
+              <span id="wx-hum">💧 60%</span>
+              <span id="wx-wind">💨 3.2 m/s</span>
+            </div>
+          </div>
+          <div style="margin-left:auto;text-align:right;">
+            <div class="wx-time" id="wx-date"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today Tasks -->
+      <div class="section-head">
+        <h2 data-i18n="todaysTasks">Bugungi vazifalar</h2>
+        <a onclick="switchPage('tasks')" data-i18n="seeAll">Hammasini ko'rish →</a>
+      </div>
+      <div id="today-tasks-list">
+        <div class="empty-state">
+          <i class="fas fa-check-double"></i>
+          <p data-i18n="noTasksToday">Bugun vazifa yo'q. Yangisini qo'shing!</p>
+        </div>
+      </div>
+
+      <!-- AI Tips -->
+      <div style="margin-top:24px;">
+        <div class="section-head">
+          <h2 data-i18n="aiSuggestions">AI Tavsiyalar</h2>
+        </div>
+        <div class="ai-tips">
+          <div class="ai-tips-head">
+            <i class="fas fa-magic" style="color:#FFB347;"></i>
+            <span>Smart Tips</span>
+          </div>
+          <p class="ai-tip-text" id="ai-tip-text">
+            Bugungi vazifalaringizga e'tibor qiling va eng muhimlaridan boshlang!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: TASKS ══ -->
+    <div class="page" id="page-tasks">
+      <div class="filters" id="filter-row">
+        <button class="filter-chip active" data-filter="all" data-i18n="filterAll">Hammasi</button>
+        <button class="filter-chip" data-filter="pending" data-i18n="filterPending">Kutilmoqda</button>
+        <button class="filter-chip" data-filter="done" data-i18n="filterDone">Bajarilgan</button>
+        <button class="filter-chip" data-filter="missed" data-i18n="filterMissed">O'tib ketgan</button>
+      </div>
+      <div id="tasks-list">
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <p data-i18n="noTasksYet">Hali vazifa yo'q. Yangisini qo'shing!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: CALENDAR ══ -->
+    <div class="page" id="page-calendar">
+      <div class="calendar-wrap">
+        <!-- Calendar Grid -->
+        <div class="card">
+          <div class="calendar-header">
+            <span class="calendar-month" id="cal-month-label">Oktabr 2026</span>
+            <div class="cal-nav">
+              <button class="cal-nav-btn" id="cal-prev"><i class="fas fa-chevron-left"></i></button>
+              <button class="cal-nav-btn" id="cal-next"><i class="fas fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <div class="cal-days-header" id="cal-days-header"></div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+
+        <!-- Selected Date Tasks -->
+        <div class="card" style="display:flex;flex-direction:column;">
+          <h3 id="cal-selected-title" class="cal-selected-title"></h3>
+          <div id="cal-tasks-list" style="flex:1;overflow-y:auto;">
+            <div class="empty-state">
+              <i class="fas fa-calendar-times"></i>
+              <p data-i18n="noTasksForDate">Bu sanada vazifa yo'q</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: AI CHAT ══ -->
+    <div class="page" id="page-ai">
+      <div class="ai-chat-wrap">
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+          <div class="chat-header">
+            <div class="chat-avatar"><i class="fas fa-robot"></i></div>
+            <div>
+              <div class="chat-name" data-i18n="aiAssistant">AI Yordamchi</div>
+              <div class="chat-status" data-i18n="aiOnline">● Onlayn</div>
+            </div>
+            <div class="ai-counter">
+              <span id="ai-remaining-top">30</span>/30 <span data-i18n="questions">savol</span>
+            </div>
+          </div>
+          <div class="chat-messages" id="chat-messages"></div>
+          <div class="chat-input-wrap">
+            <textarea class="chat-input" id="chat-input" rows="1"
+              placeholder="Savol bering..." data-i18n-placeholder="askAi"></textarea>
+            <button class="send-btn" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+
+        <!-- AI Info Panel -->
+        <div class="ai-info-panel">
+          <div>
+            <div class="ai-panel-title" data-i18n="aiAssistant">AI Yordamchi</div>
+            <div class="ai-limit-bar">
+              <div class="ai-limit-label" data-i18n="remainingQuestions">Bugun qolgan savollar</div>
+              <div class="ai-limit-val"><span id="ai-remaining">30</span>/30</div>
+              <div style="margin-top:8px;">
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" id="ai-limit-bar" style="width:100%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="topics-title" data-i18n="topics">Mavzular</div>
+            <ul class="ai-topics">
+              <li><span>📋</span><span data-i18n="topic1">Kunlik vazifalar va reja</span></li>
+              <li><span>⚡</span><span data-i18n="topic2">Produktivlik maslahatlari</span></li>
+              <li><span>💪</span><span data-i18n="topic3">Sog'liq va sport</span></li>
+              <li><span>📚</span><span data-i18n="topic4">O'qish strategiyalari</span></li>
+              <li><span>🕌</span><span data-i18n="topic5">Namoz va Qibla</span></li>
+              <li><span>☁️</span><span data-i18n="topic6">Ob-havo</span></li>
+            </ul>
+          </div>
+          <div class="ai-note-box">
+            <div class="ai-note-text" style="color:#31D9A4;font-weight:600;">
+              ✅ Groq AI Online (Qwen 3.8 / GPT)
+            </div>
+            <div class="ai-note-text" style="margin-top:4px;">
+              Ultra-tezkor AI javoblari faol.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: SETTINGS ══ -->
+    <div class="page" id="page-settings">
+      <div class="settings-wrap">
+        <!-- Profile Card -->
+        <div>
+          <div class="settings-profile-card" style="margin-bottom:20px;">
+            <div class="profile-avatar">⚙️</div>
+            <div class="profile-title" data-i18n="appTitle">Smart Daily Planner</div>
+            <div class="profile-stats">
+              <div class="pstat">
+                <div class="pstat-val" id="s-total">0</div>
+                <div class="pstat-label" data-i18n="allTasks">Barcha</div>
+              </div>
+              <div class="pstat">
+                <div class="pstat-val" id="s-done">0</div>
+                <div class="pstat-label" data-i18n="completed">Bajarilgan</div>
+              </div>
+              <div class="pstat">
+                <div class="pstat-val" id="s-pending">0</div>
+                <div class="pstat-label" data-i18n="pending">Kutilmoqda</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card card-sm">
+            <div class="completion-label" data-i18n="completionRate">Bajarilish darajasi</div>
+            <div class="progress-bar-bg" style="height:14px;margin-top:8px;">
+              <div class="progress-bar-fill" id="s-progress" style="width:0%;border-radius:8px;"></div>
+            </div>
+            <div class="completion-pct" id="s-progress-label">0%</div>
+          </div>
+        </div>
+
+        <!-- Settings Options -->
+        <div>
+          <div class="settings-section">
+            <h3 data-i18n="appSettings">Ilova sozlamalari</h3>
+            <div class="setting-row">
+              <div class="setting-icon"><i class="fas fa-adjust"></i></div>
+              <div class="setting-info">
+                <div class="setting-title" id="theme-setting-title">Tungi rejim</div>
+                <div class="setting-sub" id="theme-setting-sub">Dark Mode faol</div>
+              </div>
+              <div class="toggle on" id="theme-toggle-settings" onclick="toggleThemeSettings()"></div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-icon"><i class="fas fa-language"></i></div>
+              <div class="setting-info">
+                <div class="setting-title" data-i18n="language">Til</div>
+                <div class="setting-sub" id="lang-sub">O'zbek</div>
+              </div>
+              <div class="lang-group">
+                <button class="lang-pill active" data-lang="uz" onclick="setLang('uz')">O'z</button>
+                <button class="lang-pill" data-lang="ru" onclick="setLang('ru')">Рус</button>
+                <button class="lang-pill" data-lang="en" onclick="setLang('en')">En</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3 data-i18n="other">Qo'shimcha</h3>
+            <div class="setting-row clickable" onclick="alert('Qibla: Toshkent uchun ~270° (G\'arb yo\'nalishi)')">
+              <div class="setting-icon"><i class="fas fa-mosque"></i></div>
+              <div class="setting-info">
+                <div class="setting-title" data-i18n="qibla">Qibla</div>
+                <div class="setting-sub" data-i18n="qiblaDirection">Qibla yo'nalishi</div>
+              </div>
+              <i class="fas fa-chevron-right" style="color:var(--primary);"></i>
+            </div>
+            <div class="setting-row">
+              <div class="setting-icon"><i class="fas fa-info-circle"></i></div>
+              <div class="setting-info">
+                <div class="setting-title" data-i18n="about">Ilova haqida</div>
+                <div class="setting-sub">v1.0.0 · Smart Daily Planner</div>
+              </div>
+            </div>
+            <div class="setting-row clickable" onclick="clearAllData()">
+              <div class="setting-icon danger-icon"><i class="fas fa-trash-alt"></i></div>
+              <div class="setting-info">
+                <div class="setting-title danger-text" data-i18n="clearData">Ma'lumotlarni tozalash</div>
+                <div class="setting-sub" data-i18n="clearDataSub">Barcha vazifalarni o'chirib tashlash</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main-wrap -->
+
+<!-- ══ MODAL: ADD TASK ══ -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 data-i18n="addTask">Yangi vazifa qo'shish</h2>
+      <button class="modal-close" onclick="closeModal('add-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="taskTitle">Vazifa nomi</label>
+      <input type="text" id="task-title" class="form-input"
+        placeholder="Masalan: Kitob o'qish" data-i18n-placeholder="taskTitle" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="description">Izoh</label>
+      <textarea id="task-desc" class="form-textarea"
+        placeholder="Vazifa haqida qo'shimcha ma'lumot..." data-i18n-placeholder="description"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-i18n="date">Sana</label>
+        <input type="date" id="task-date" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="time">Vaqt</label>
+        <input type="time" id="task-time" class="form-input" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="category">Kategoriya</label>
+      <select id="task-cat" class="form-select">
+        <option value="">-- Tanlang --</option>
+        <option value="work">Ish / Work</option>
+        <option value="exercise">Mashq / Exercise</option>
+        <option value="study">O'qish / Study</option>
+        <option value="prayer">Namoz / Prayer</option>
+        <option value="hydration">Suv ichish / Hydration</option>
+        <option value="other">Boshqa / Other</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal('add-modal')" data-i18n="cancel">Bekor qilish</button>
+      <button class="btn-primary" onclick="addTask()" data-i18n="add">Qo'shish</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: TASK DETAIL ══ -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="detail-title">Vazifa</h2>
+      <button class="modal-close" onclick="closeModal('detail-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="detail-cat-badge" class="detail-badge" style="display:none;"></div>
+    <div class="detail-meta-grid">
+      <div class="card card-sm detail-meta-card">
+        <div class="detail-meta-label"><i class="fas fa-calendar-day"></i> Sana</div>
+        <div class="detail-meta-val" id="detail-date">—</div>
+      </div>
+      <div class="card card-sm detail-meta-card">
+        <div class="detail-meta-label"><i class="fas fa-clock"></i> Vaqt</div>
+        <div class="detail-meta-val" id="detail-time">—</div>
+      </div>
+    </div>
+    <div class="card card-sm" style="margin-bottom:16px;">
+      <div class="detail-meta-label"><i class="fas fa-align-left"></i> Izoh</div>
+      <p id="detail-desc" class="detail-desc-text">—</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline danger-btn" onclick="deleteDetailTask()">
+        <i class="fas fa-trash"></i> O'chirish
+      </button>
+      <button class="btn-primary" id="detail-toggle-btn" onclick="toggleDetailTask()">
+        <i class="fas fa-check"></i> Bajarildi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CELEBRATION ══ -->
+<div class="celebration" id="celebration"></div>
+
+<!-- ══ TOASTS ══ -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
